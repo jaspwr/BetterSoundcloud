@@ -1,0 +1,14 @@
+{
+  "name": "BetterSoundcloud",
+  "action": {},
+  "manifest_version": 3,
+  "version": "0.1",
+  "description": "adds quality of life features and extra personalisation to SoundCloud",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "main.js"
+  }
+}
