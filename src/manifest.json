@@ -1,25 +1,26 @@
 {
   "name": "BetterSoundcloud",
-  "action": {},
   "manifest_version": 3,
   "version": "0.1",
   "description": "adds quality of life features and extra personalisation to SoundCloud",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage",
+    "tabs"
   ],
+  "host_permissions": [
+    "https://soundcloud.com/*"
+  ],
+  "icons": {
+    "16": "./img/icon.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "https://soundcloud.com/*"
-      ],
-      "all_frames": true,
-      "js": [
-        "main.js"
-      ]
-    }
-  ]
+  "action": {
+    "default_popup": "./html/menu.html",
+    "default_icon": "./img/icon.png"
+  },
+  "options_page": "./html/options.html"
 }
