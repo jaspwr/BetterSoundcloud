@@ -126,7 +126,7 @@ function apply_changes() {
       wait_for_page("web-profiles__item").then(links => {
         for (var i = 0; i < links.length; i++) {
           var link_elem = links[i].childNodes[0].childNodes[0];
-          //Add email, traktrain, applemusic, beatport, spotify subdomain, roblox
+          //Add email, traktrain, applemusic, beatport, spotify subdomain, roblox, paypal, cashapp, venmo
           if (link_elem.href.includes("discord")) {
             console.log(link_elem.childNodes);
             link_elem.childNodes[1].style.background = "url('https://pbs.twimg.com/media/E5L38mPX0AE0FEk?format=jpg&name=4096x4096') no-repeat 50% 50%";
@@ -141,12 +141,57 @@ function apply_changes() {
           //extra page settings
           wait_for_page("profileSettings__form").then((elem) => {
             var _new = document.createElement('div');
-            _new.innerHTML = '<div class="g-form-section-head"><h3 class="g-form-section-title">Custom CSS</h3><button type="button" class="hintButton sc-button sc-button-small" tabindex="0" aria-haspopup="true" role="button" aria-owns="dropdown-button-2577"></button>  </div>';
-            var css = document.createElement('textarea');
-            _new.appendChild(css);
-            //inset_after(_new, elem[0]);
+            _new.innerHTML = '<div class="g-form-section-head"><h3 class="g-form-section-title">Custom CSS</h3></div><br>';
+            //var css = document.createElement('textarea');
+            //_new.appendChild(css);
+            _new.innerHTML += '<style type="text/css" media="screen">#editor {margin: 0; height: 500px;padding: 2px 7px;border-radius: 4px;}</style><pre id="editor" class = "csseditor"></pre>';
+            _new.innerHTML += `<style>.ApplyCSS{
+              background-color: #f50;
+              border-color: #f50;
+              color: #fff;
+              position: relative;
+              height: 26px;
+              margin: 0;
+              padding: 2px 11px 2px 10px;
+              border: 1px solid #e5e5e5;
+              border-radius: 3px;
+              cursor: pointer;
+              font-size: 14px;
+              line-height: 20px;
+              white-space: nowrap;
+              font-family: Interstate,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Garuda,Verdana,Tahoma,sans-serif;
+              font-weight: 100;
+              text-align: center;
+              vertical-align: baseline;
+              box-sizing: border-box;
+          
+          }</style>
+          <div class="profileSettings__formButtons sc-button-toolbar sc-border-light-top">
+              <div class="profileSettings__permalinkWarning sc-text-light sc-text-secondary">
+              </div>
+              <button type="button" class="ApplyCSS" title="Apply CSS" aria-label="Apply CSS">Apply CSS</button>
+            </div>`;
+            _new.innerHTML += '<div class="g-form-section-head"><h3 class="g-form-section-title">Collective settings</h3></div>';
+            _new.innerHTML += `<input type=\"checkbox\"></input>Collective account<br>
+            <div style = "opacity: 30%;">
+              Collective Badge:
+
+            </div>
+            `
             elem[0].appendChild(_new);
-            console.log(_new);
+            var editor = ace.edit("editor");
+            //I dont know why but the editor only works after you run 
+            //both of these lines even though the theme dosnt even exit
+            editor.setTheme("ace/theme/twilight");
+            editor.session.setMode("ace/mode/css");
+
+
+            //save button
+            var save = document.getElementsByClassName("ApplyCSS")[0];
+            var lstnr = save.addEventListener("click", () => {
+              console.log(editor.getValue());
+              location.reload();
+            });
           });
         });
       }

@@ -14,7 +14,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       target: { tabId: tabId },
       files: ["./main.js"]
     }, () => {
-      console.log("ghhhhhhhh");
+      chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: ["./ace/ace.js"]
+      }, () => {
+        console.log("ghhhhhhhh");
+      });
     });
   }
 });

@@ -1,1 +1,11 @@
-TODO.txt
+
+icon server
+css server
+follower caching
+message refreshing
+collective badge
+collective server
+
+optionals
+    post notifs
+    better codec
