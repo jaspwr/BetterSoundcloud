@@ -10,7 +10,8 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://soundcloud.com/*"
+    "https://soundcloud.com/*",
+    "http://localhost:8080/*"
   ],
   "icons": {
     "16": "./img/icon.png"
@@ -22,5 +23,16 @@
     "default_popup": "./html/menu.html",
     "default_icon": "./img/icon.png"
   },
-  "options_page": "./html/options.html"
+  "options_page": "./html/options.html",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "getstyle",
+        "getstyle"
+      ],
+      "matches": [
+        "http://localhost:8080/*"
+      ]
+    }
+  ]
 }

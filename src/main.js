@@ -1,3 +1,4 @@
+///////////////////   Functions   ///////////////////
 function grab_tag(str) {
   return str.substr(str.lastIndexOf('/') + 1);
 }
@@ -15,42 +16,107 @@ function wait_for_page(class_name) {
   });
 }
 
-
-
 function inset_after(newNode, referenceNode) {
   referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
+function clean_up_css() {
+  var checkExist = setInterval(function () {
+    if (document.body) {
+      clearInterval(checkExist);
+      var sheet = document.getElementById("custom_style");
+      if (sheet != undefined)
+        sheet.remove();
+    }
+  }, 100);
+
+}
 
 
-//on doc init
-var user_tag = grab_tag(window.location.href);
-console.log(user_tag);
-var user_style = ".spotlight__empty {background-color: black;}";
-var sheet = document.createElement('style');
-sheet.innerHTML = user_style;
-document.body.appendChild(sheet);
 
 
-
-
-
-
-var self_followers;
+///////////////////   Init Processes   ///////////////////
+var self_followers = ["bpiv", "dltzk"];
 var self_tag;
-var url;
+var url = window.location.href.split('/');;
+var user_style;
+var user_tag;
+var css_txt = ""
+var hide_original_css = false
 
+if (url[3] != "messages") {
+  const Http = new XMLHttpRequest();
+  const url = 'http://localhost:8080/getstyle/' + user_tag + "/plain";
+  Http.open("GET", url);
+  Http.setRequestHeader('Content-type', 'text/plain');
+  Http.onreadystatechange = function () {
+    css_txt = Http.responseText;
+    if (css_txt.split('*/')[0] == "/*1") {
+      //remove all existing css from the document
+      hide_original_css = true;
+      var styles = document.getElementsByTagName("style")
+      for (var i = 0; i < styles.length; i++) {
+        var id = styles[i].getAttribute("id");
+        if (id != undefined && !id.includes("ace"))
+          styles[i].remove();
+      }
+      var links = document.getElementsByTagName("link")
+      for (var i = 0; i < links.length; i++) {
+        if (links[i].getAttribute("rel") == "stylesheet" && links[i].getAttribute("id") != "custom_style")
+          links[i].setAttribute("href", "")
+      }
+    }
+  }
+  Http.send();
+
+
+
+  user_tag = grab_tag(window.location.href);
+  var sheet_url = "http://localhost:8080/getstyle/" + user_tag;
+  var _sheet = document.getElementById("custom_style");
+  if (_sheet)
+    _sheet.setAttribute("href", sheet_url);
+  else {
+    var sheet = document.createElement('link');
+    sheet.setAttribute("rel", "stylesheet");
+    sheet.setAttribute("id", "custom_style");
+    sheet.setAttribute("href", sheet_url);
+    document.body.appendChild(sheet);
+  }
+
+  var icons_ = document.createElement('style');
+  icons_.innerHTML +=
+    `.social_icon_bsc{
+      display: inline-block;
+        width: 16px;
+        height: 16px;
+        vertical-align: top;
+        text-indent: 16px;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity .2s;
+        background-size: 16px 16px;
+        opacity: 60%;
+    }
+    .social_icon_bsc:hover{
+      opacity: 100%;
+
+    }
+    `;
+  document.body.appendChild(icons_);
+
+
+
+
+}
+
+
+
+///////////////////   After page has loaded   ///////////////////
 function apply_changes() {
-  //init stuff (do on load)
-  url = window.location.href.split('/');
-  self_tag = grab_tag(document.getElementsByClassName("header__userNavButton header__userNavUsernameButton")[0].href);
-  self_followers = ["bpiv", "dltzk"];
-
-
-
-  //on page switch
   switch (url[3]) {
     case "messages":
+      clean_up_css();
       const messages_box = document.querySelector("#content > div > div.l-messages-main > div > div.conversation__messages");
       console.log(messages_box);
       wait_for_page("textfield__label g-required-label").then(text => {
@@ -124,28 +190,42 @@ function apply_changes() {
 
       //new icons
       wait_for_page("web-profiles__item").then(links => {
+        var list = ["discord", "traktrain", "pcmusic", "namemc", "roblox", "mail", "paypal", "cash", "venmo", "apple", "beatport"];
         for (var i = 0; i < links.length; i++) {
           var link_elem = links[i].childNodes[0].childNodes[0];
           //Add email, traktrain, applemusic, beatport, spotify subdomain, roblox, paypal, cashapp, venmo
-          if (link_elem.href.includes("discord")) {
-            console.log(link_elem.childNodes);
-            link_elem.childNodes[1].style.background = "url('https://pbs.twimg.com/media/E5L38mPX0AE0FEk?format=jpg&name=4096x4096') no-repeat 50% 50%";
-          }
+          list.forEach(l => {
+            console.log(l);
+            if (link_elem.href.includes(l)) {
+              var span = link_elem.childNodes[1];
+              console.log(span.classList)
+              span.classList.remove('sc-social-logo');
+              span.classList.remove('sc-social-logo-personal');
+
+
+              var link = "http://localhost:8080/" + "icons/" + l + ".svg";
+              span.innerHTML = "<img class=\"social_icon_bsc\" src=\"" + link + "\">"
+            }
+          });
         }
       });
 
       //check if own page
-      if (self_tag.toLowerCase() === user_tag.toLowerCase()) {
-        var edit_button = document.getElementsByClassName("sc-button-edit editProfileButton sc-button sc-button-medium sc-button-responsive editProfileButton--hiddenLabelOnSmallScreen")[0];
-        edit_button.addEventListener("click", () => {
-          //extra page settings
-          wait_for_page("profileSettings__form").then((elem) => {
-            var _new = document.createElement('div');
-            _new.innerHTML = '<div class="g-form-section-head"><h3 class="g-form-section-title">Custom CSS</h3></div><br>';
-            //var css = document.createElement('textarea');
-            //_new.appendChild(css);
-            _new.innerHTML += '<style type="text/css" media="screen">#editor {margin: 0; height: 500px;padding: 2px 7px;border-radius: 4px;}</style><pre id="editor" class = "csseditor"></pre>';
-            _new.innerHTML += `<style>.ApplyCSS{
+      if (self_tag.toLowerCase() == user_tag.toLowerCase()) {
+
+
+        wait_for_page("sc-button-edit editProfileButton sc-button sc-button-medium sc-button-responsive editProfileButton--hiddenLabelOnSmallScreen").then(elem => {
+          var edit_button = elem[0]
+          edit_button.addEventListener("click", () => {
+            //extra page settings
+            wait_for_page("profileSettings__form").then((elem) => {
+              var _new = document.createElement('div');
+              _new.innerHTML = '<div class="g-form-section-head"><h3 class="g-form-section-title">Custom CSS</h3></div>';
+              //var css = document.createElement('textarea');
+              //_new.appendChild(css);
+              _new.innerHTML += '<br><input type="checkbox" id="hide_original_css"></input> Remove orginal stylesheet<br><br>Note: Some properties may require "!important" before the semicolon to override the original Soundcloud CSS. <br>'
+              _new.innerHTML += '<style type="text/css" media="screen">#editor {margin: 0; height: 500px;padding: 2px 7px;border-radius: 4px;}</style><pre id="editor" class = "csseditor"></pre>';
+              _new.innerHTML += `<style>.ApplyCSS{
               background-color: #f50;
               border-color: #f50;
               color: #fff;
@@ -171,26 +251,46 @@ function apply_changes() {
               </div>
               <button type="button" class="ApplyCSS" title="Apply CSS" aria-label="Apply CSS">Apply CSS</button>
             </div>`;
-            _new.innerHTML += '<div class="g-form-section-head"><h3 class="g-form-section-title">Collective settings</h3></div>';
-            _new.innerHTML += `<input type=\"checkbox\"></input>Collective account<br>
+              _new.innerHTML += '<div class="g-form-section-head"><h3 class="g-form-section-title">Collective settings</h3></div>';
+              _new.innerHTML += `<br><input type=\"checkbox\"></input>Collective account<br><br>
             <div style = "opacity: 30%;">
               Collective Badge:
 
             </div>
             `
-            elem[0].appendChild(_new);
-            var editor = ace.edit("editor");
-            //I dont know why but the editor only works after you run 
-            //both of these lines even though the theme dosnt even exit
-            editor.setTheme("ace/theme/twilight");
-            editor.session.setMode("ace/mode/css");
+              elem[0].appendChild(_new);
 
+              var editor = ace.edit("editor");
+              //I dont know why but the editor only works after you run 
+              //both of these lines even though the theme dosnt even exit
+              editor.setTheme("ace/theme/twilight");
+              editor.session.setMode("ace/mode/css");
+              var spl = css_txt.split('*/');
+              if (spl.length > 1)
+                editor.setValue(spl[1]);
 
-            //save button
-            var save = document.getElementsByClassName("ApplyCSS")[0];
-            var lstnr = save.addEventListener("click", () => {
-              console.log(editor.getValue());
-              location.reload();
+              document.getElementById("hide_original_css").checked = hide_original_css;
+              //TODO: save css when close edit menu
+
+              //save button
+              var save = document.getElementsByClassName("ApplyCSS")[0];
+              var lstnr = save.addEventListener("click", () => {
+                const Http = new XMLHttpRequest();
+
+                const url = 'http://localhost:8080/setstyle';
+                Http.open("POST", url, true);
+                Http.setRequestHeader('Content-type', 'text/plain');
+                Http.onreadystatechange = function () {
+                  console.log(Http.responseText);
+                  if (Http.responseText === "success")
+                    location.reload();
+                }
+                var head = "/*0*/";
+                if (document.getElementById("hide_original_css").checked)
+                  head = "/*1*/"
+                Http.send(head + editor.getValue());
+
+              });
             });
           });
         });
@@ -200,6 +300,10 @@ function apply_changes() {
 }
 
 
-apply_changes();
+wait_for_page("header__userNavButton header__userNavUsernameButton").then(elem => {
+  self_tag = grab_tag(elem[0].href);
+  apply_changes();
+  console.log("Injected script started");
+});
 
-console.log("Injected script started");
+
