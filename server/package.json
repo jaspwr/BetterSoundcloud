@@ -10,6 +10,11 @@
   "license": "ISC",
   "dependencies": {
     "connect": "^3.7.0",
-    "mysql": "^2.18.1"
+    "crypto": "^1.0.1",
+    "image-data-uri": "^2.0.1",
+    "mysql": "^2.18.1",
+    "puppeteer": "^10.1.0",
+    "request": "^2.88.2",
+    "sanitize": "^2.1.0"
   }
 }
