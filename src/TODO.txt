@@ -1,12 +1,13 @@
-sql
-oauth_token encryption
-oauth_token chaching
-button loadingg
-follower caching
-fix message css
+button loadingg & timeout mesaages
+destroy sessoion button
+add times to messages css
 
+get proper hosting
+sql
+*oauth_token chaching
+*follows you server side
 
 optionals
+    sterilise badge icons
+    oauth_token encryption
     message refreshing
-    post notifs
-    better codec

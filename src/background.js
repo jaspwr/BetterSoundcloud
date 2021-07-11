@@ -11,26 +11,36 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   console.log(changeInfo);
   console.log(tabId);
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    files: ["./main.js"]
+  }, () => {
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ["./ace/ace.js"]
+    }, () => {
+      console.log("ghhhhhhhh");
+    });
+  });
+  if (tab.url.split('/')[3] == "messages") {
+    injected = false;
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ["./messages.js"]
+    }, () => {
+      console.log("uuuuuuuuuuuuu");
+    });
+  } else {
+    if (changeInfo.status === "loading") {
+      if (!injected) {
+        injected = true;
 
-  if (changeInfo.status === "loading") {
-    if (!injected) {
-      injected = true;
-      chrome.scripting.executeScript({
-        target: { tabId: tabId },
-        files: ["./main.js"]
-      }, () => {
-        chrome.scripting.executeScript({
-          target: { tabId: tabId },
-          files: ["./ace/ace.js"]
-        }, () => {
-          console.log("ghhhhhhhh");
-        });
-      });
+      }
+    } else if (changeInfo.status === "complete") {
+      if (pre_url != tab.url)
+        injected = false;
+      pre_url = tab.url;
     }
-  } else if (changeInfo.status === "complete") {
-    if (pre_url != tab.url)
-      injected = false;
-    pre_url = tab.url;
   }
 
 });

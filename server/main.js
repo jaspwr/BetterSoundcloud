@@ -1,10 +1,3 @@
-///////////////////////////////////////////////////////
-//         Copyright (c) 2021, Jasper Parker         //
-//                All rights reserved.               //
-///////////////////////////////////////////////////////
-
-
-
 const http = require("http");
 var mysql = require('mysql');
 var connect = require('connect');
