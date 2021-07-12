@@ -40,8 +40,18 @@ wait_for_page("conversationMessages__item sc-clearfix").then(msgs => {
             msgs[i].style.marginTop = "-40px";
             avatar.style.visibility = "hidden";
         }
-        var date = msgs[i].childNodes[0].childNodes[2].childNodes[0].getAttribute("datetime");
-        msgs[i].childNodes[0].childNodes[2].style.visibility = "hidden";
+        //var date = msgs[i].childNodes[0].childNodes[2].childNodes[0].getAttribute("datetime");
+        var date = msgs[i].childNodes[0].childNodes[2].style;
+        //if end of block
+        var self_next = !self;
+        if (i + 1 < msgs.length)
+            self_next = msgs[i + 1].childNodes[0].childNodes[4].childNodes[1].childNodes.length > 1;
+
+        if (self_next == self)
+            date.visibility = "hidden";
+        date.position = "absolute";
+        date.display = "block";
+        date.left = "55px";
         var para_count = msgs[i].childNodes[0].childNodes[4].childNodes[3].childNodes.length;
         var para_fix = [];
         for (var ii = 1; ii < para_count - 1; ii++) {
@@ -58,20 +68,23 @@ wait_for_page("conversationMessages__item sc-clearfix").then(msgs => {
                 var offset = (full_wid - wid) - 12;
                 message.style.transform = "translateX(" + offset.toString() + "px)";
                 avatar.style.float = "right";
+                date.left = offset + "px";
             }
 
             message.style.position = "relative";
             message.style.borderRadius = "16px";
             message.style.padding = "10px";
             message.style.top = "-24px";
+            var hei = message.offsetHeight;
+            date.top = (7 + hei).toString() + "px";
             //check for embeds
-            if (message.childNodes.length > 0 && !message.childNodes[0].hasChildNodes()) {
+            if (message.childNodes.length > 0 && !
+                (message.childNodes[0].hasChildNodes()
+                    && message.childNodes[0].childNodes[0].hasChildNodes())) {
                 message.style.maxWidth = "265px";
                 message.style.display = "inline-block";
             }
-            // if (ii < para_count - 2) {
-            //   para_fix.push(message);
-            // }
+
         }
         para_fix.forEach(para => {
             para.parentNode.insertBefore(document.createElement('br'), para.nextSibling);

@@ -64,12 +64,29 @@ var own_badge = null;
 function update_badge_preview() {
   const preview = document.querySelector('img');
   const file = document.getElementById("b_icon").files[0];
-  const reader = new FileReader();
+  var file_data = "";
+  if (file != undefined) {
+    const reader = new FileReader();
+    file_data = reader.result;
+    reader.addEventListener("load", function () {
+      var badge_json = {
+        "name": document.getElementById("b_name").value,
+        "icon": file_data,
+        "text_colour": document.getElementById("b_t_colour").value,
+        "background_colour": document.getElementById("b_b_colour").value,
+        "links": self_tag,
+        "roster": document.getElementById("b_roster").value
+      };
+      var json = simple_sanitize(JSON.stringify(badge_json));
+      document.getElementById('badge_preview').innerHTML = create_badge_html(json);
+      own_badge = json;
+    }, false);
 
-  reader.addEventListener("load", function () {
+    reader.readAsDataURL(file);
+  } else {
     var badge_json = {
       "name": document.getElementById("b_name").value,
-      "icon": reader.result,
+      "icon": "",
       "text_colour": document.getElementById("b_t_colour").value,
       "background_colour": document.getElementById("b_b_colour").value,
       "links": self_tag,
@@ -78,11 +95,10 @@ function update_badge_preview() {
     var json = simple_sanitize(JSON.stringify(badge_json));
     document.getElementById('badge_preview').innerHTML = create_badge_html(json);
     own_badge = json;
-  }, false);
-
-  if (file) {
-    reader.readAsDataURL(file);
   }
+
+
+
 
 }
 
@@ -315,7 +331,7 @@ function apply_changes() {
                 }
                 _new.innerHTML += ht + `<br><br></div><div class="profileSettings__formButtons sc-button-toolbar sc-border-light-top">
                 <div class="profileSettings__permalinkWarning sc-text-light sc-text-secondary">
-                </div><button type="button" class="btn ApplyCollectives" title="Apply to profile" aria-label="Apply to profile">Apply to profile</button></div><br>
+                </div><span id=\"col_timeout\" style=\"visibility: hidden; float:left; \">Connection timed out, please try again later.</span><button type="button" class="btn ApplyCollectives" title="Apply to profile" aria-label="Apply to profile">Apply to profile</button></div><br>
                 <div class="g-form-section-head"><h3 class="g-form-section-title">Collective badge for this account<span id="badge_preview"></span></h3></div>
                 <div>
                 <table>
@@ -328,9 +344,9 @@ function apply_changes() {
                 </table><br>
                 <div class="profileSettings__formButtons sc-button-toolbar sc-border-light-top">
                 <div class="profileSettings__permalinkWarning sc-text-light sc-text-secondary">
-                </div>
+                </div><span id=\"bad_error\" style=\"visibility: hidden; float:left;\">Insufficient information provided.</span><span id=\"bad_timeout\" style=\"visibility: hidden; float:left; \">Connection timed out, please try again later.</span>
                 <button type="button" class="btn ApplyBadge" title="Apply to badge" aria-label="Apply to badge">Apply to badge</button></div>
-                </div>
+                </div><input type="checkbox" id="kill_sess"></input>Destroy session token after verifying (you will be logged out).
                 `
                 elem[0].appendChild(_new);
 
@@ -372,24 +388,36 @@ function apply_changes() {
                 var save_badge = document.getElementsByClassName("ApplyBadge")[0];
                 save_badge.addEventListener("click", () => {
                   if (own_badge != null) {
+                    save_badge.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
                     const Http = new XMLHttpRequest();
                     const url = 'http://localhost:8080/setbadge';
                     Http.open("POST", url, true);
                     Http.setRequestHeader('Content-type', 'text/plain');
                     Http.onreadystatechange = function () {
                       if (Http.responseText === "success")
-                        location.reload();
+                        if (document.getElementById("kill_sess").checked)
+                          window.location.href = "https://soundcloud.com/logout";
+                        else
+                          location.reload();
                       else {
-                        document.getElementById("css_timeout").style.visibility = "visible";
+                        document.getElementById("bad_timeout").style.visibility = "visible";
+                        save_badge.setAttribute("class", "btn ApplyBadge");
+                        if (document.getElementById("kill_sess").checked)
+                          window.location.href = "https://soundcloud.com/logout";
                       }
                     }
 
                     Http.ontimeout = function () {
-                      document.getElementById("css_timeout").style.visibility = "visible";
+                      document.getElementById("bad_timeout").style.visibility = "visible";
+                      save_badge.setAttribute("class", "btn ApplyBadge");
+                      if (document.getElementById("kill_sess").checked)
+                        window.location.href = "https://soundcloud.com/logout";
                     }
 
 
                     Http.send(oauth_crypt() + ":" + own_badge);
+                  } else {
+                    document.getElementById("bad_error").style.visibility = "visible";
                   }
                 });
 
@@ -400,22 +428,70 @@ function apply_changes() {
                   });
                 }
 
+                var save_col = document.getElementsByClassName("ApplyCollectives")[0];
+                save_col.addEventListener("click", () => {
+                  save_col.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
+                  const Http = new XMLHttpRequest();
+                  const url = 'http://localhost:8080/setcol';
+                  Http.open("POST", url, true);
+                  Http.setRequestHeader('Content-type', 'text/plain');
+                  Http.onreadystatechange = function () {
+                    if (Http.responseText === "success")
+                      if (document.getElementById("kill_sess").checked)
+                        window.location.href = "https://soundcloud.com/logout";
+                      else
+                        location.reload();
+                    else {
+                      document.getElementById("col_timeout").style.visibility = "visible";
+                      save_col.setAttribute("class", "btn ApplyBadge");
+                      if (document.getElementById("kill_sess").checked)
+                        window.location.href = "https://soundcloud.com/logout";
+                    }
+                  }
+
+                  Http.ontimeout = function () {
+                    document.getElementById("col_timeout").style.visibility = "visible";
+                    save_col.setAttribute("class", "btn ApplyBadge");
+                    if (document.getElementById("kill_sess").checked)
+                      window.location.href = "https://soundcloud.com/logout";
+                  }
+
+                  Http.send(oauth_crypt() + ":" + own_badge);
+                });
+
+                var b_options = document.getElementsByClassName("b_option");
+                for (var i = 0; i < b_options.length; i += 1) {
+                  b_options[i].addEventListener("change", () => {
+                    update_badge_preview();
+                  });
+                }
+
                 var save_css = document.getElementsByClassName("ApplyCSS")[0];
-                var lstnr = save_css.addEventListener("click", () => {
+                save_css.addEventListener("click", () => {
+                  save_css.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
                   const Http = new XMLHttpRequest();
                   const url = 'http://localhost:8080/setstyle';
                   Http.open("POST", url, true);
                   Http.setRequestHeader('Content-type', 'text/plain');
                   Http.onreadystatechange = function () {
                     if (Http.responseText === "success")
-                      location.reload();
+                      if (document.getElementById("kill_sess").checked)
+                        window.location.href = "https://soundcloud.com/logout";
+                      else
+                        location.reload();
                     else {
                       document.getElementById("css_timeout").style.visibility = "visible";
+                      save_css.setAttribute("class", "btn ApplyCSS");
+                      if (document.getElementById("kill_sess").checked)
+                        window.location.href = "https://soundcloud.com/logout";
                     }
                   }
 
                   Http.ontimeout = function () {
                     document.getElementById("css_timeout").style.visibility = "visible";
+                    save_css.setAttribute("class", "btn ApplyCSS");
+                    if (document.getElementById("kill_sess").checked)
+                      window.location.href = "https://soundcloud.com/logout";
                   }
 
                   var head = "/*0*/";

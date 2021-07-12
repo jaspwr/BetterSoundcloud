@@ -1,11 +1,8 @@
-button loadingg & timeout mesaages
-destroy sessoion button
-add times to messages css
-
 get proper hosting
 sql
 *oauth_token chaching
 *follows you server side
+*collective lists
 
 optionals
     sterilise badge icons
