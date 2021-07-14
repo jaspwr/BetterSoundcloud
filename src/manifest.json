@@ -11,7 +11,7 @@
   ],
   "host_permissions": [
     "https://soundcloud.com/*",
-    "http://localhost:8080/*"
+    "https://bettersoundcloud.herokuapp.com/*"
   ],
   "icons": {
     "16": "./img/icon.png"

@@ -1,3 +1,5 @@
+var dom = "bettersoundcloud.herokuapp.com";
+
 function wait_for_page(class_name) {
   //This is fucked but idk how else to make it wait until the element exists
   return new Promise(resolve => {
@@ -48,13 +50,13 @@ function simple_sanitize(str) {
   return str;
 }
 
-var badge_instance = 0;
+
 function create_badge_html(json) {
   var params = JSON.parse(json);
   var href = "";
   if (params.links != undefined)
     href = 'href="https://soundcloud.com/' + params.links + '"';
-  badge_instance += 1;
+  var badge_instance = Math.round(Math.random() * 100000).toString();
   return '<a ' + href + ' class="col_badge" style="margin-top: 4px;color:' + params.text_colour + ';background-color:' +
     params.background_colour + ';"><icon__ id="ba' + badge_instance.toString() +
     '"></icon__><span>' + simple_sanitize(params.name) + '</span></a><style>#ba' + badge_instance.toString() + '{background-image: url(' + params.icon + ');}</style><br>'
@@ -96,17 +98,13 @@ function update_badge_preview() {
     document.getElementById('badge_preview').innerHTML = create_badge_html(json);
     own_badge = json;
   }
-
-
-
-
 }
 
 
 function fetch_badge(tag) {
   return new Promise(resolve => {
     const Http = new XMLHttpRequest();
-    const url = 'http://localhost:8080/badge/' + tag;
+    const url = 'https://' + dom + '/badge/' + tag;
     Http.open("GET", url, true);
     Http.onreadystatechange = function () {
       var html = create_badge_html(Http.responseText);
@@ -130,7 +128,7 @@ var badges = ["user-177606669", "sleepw3b"];
 if (url[3] != "messages") {
   user_tag = window.location.href.split('/')[3];
   const Http = new XMLHttpRequest();
-  const url = 'http://localhost:8080/getstyle/' + user_tag + "/plain";
+  const url = 'https://' + dom + '/getstyle/' + user_tag + "/plain";
   Http.open("GET", url);
   Http.setRequestHeader('Content-type', 'text/plain');
   Http.onreadystatechange = function () {
@@ -156,7 +154,7 @@ if (url[3] != "messages") {
 
 
 
-  var sheet_url = "http://localhost:8080/getstyle/" + user_tag;
+  var sheet_url = "https://" + dom + "/getstyle/" + user_tag;
   var _sheet = document.getElementById("custom_style");
   if (_sheet)
     _sheet.setAttribute("href", sheet_url);
@@ -235,13 +233,16 @@ function apply_changes() {
     default:
       //follows you
       if (self_followers.includes(user_tag)) {
-
         wait_for_page("profileHeaderInfo__userName g-type-shrinkwrap-block g-type-shrinkwrap-large-primary")
           .then((name) => {
             if (document.getElementsByClassName("fy").length == 0)
               name[0].innerHTML +=
                 "<div class=\"fy\" style=\"display: inline; background-color: #666666; font-size: 16px; padding: 3px; border-radius: 4px; color: #a6a6a6\">Follows you</div>";
           });
+      } else {
+        var list = document.getElementsByClassName("fy");
+        if (list.length > 0)
+          list[0].remove();
       }
 
       if (badges.length > 0) {
@@ -270,7 +271,7 @@ function apply_changes() {
               span.classList.remove('sc-social-logo-personal');
 
 
-              var link = "http://localhost:8080/" + "icons/" + l + ".svg";
+              var link = "https://" + dom + "/" + "icons/" + l + ".svg";
               span.innerHTML = "<img class=\"social_icon_bsc\" src=\"" + link + "\">"
             }
           });
@@ -390,7 +391,7 @@ function apply_changes() {
                   if (own_badge != null) {
                     save_badge.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
                     const Http = new XMLHttpRequest();
-                    const url = 'http://localhost:8080/setbadge';
+                    const url = 'https://' + dom + '/setbadge';
                     Http.open("POST", url, true);
                     Http.setRequestHeader('Content-type', 'text/plain');
                     Http.onreadystatechange = function () {
@@ -432,7 +433,7 @@ function apply_changes() {
                 save_col.addEventListener("click", () => {
                   save_col.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
                   const Http = new XMLHttpRequest();
-                  const url = 'http://localhost:8080/setcol';
+                  const url = 'https://' + dom + '/setcol';
                   Http.open("POST", url, true);
                   Http.setRequestHeader('Content-type', 'text/plain');
                   Http.onreadystatechange = function () {
@@ -470,7 +471,7 @@ function apply_changes() {
                 save_css.addEventListener("click", () => {
                   save_css.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
                   const Http = new XMLHttpRequest();
-                  const url = 'http://localhost:8080/setstyle';
+                  const url = 'https://' + dom + '/setstyle';
                   Http.open("POST", url, true);
                   Http.setRequestHeader('Content-type', 'text/plain');
                   Http.onreadystatechange = function () {
