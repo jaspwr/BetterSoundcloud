@@ -2,7 +2,7 @@
   "name": "BetterSoundcloud",
   "manifest_version": 3,
   "version": "0.1",
-  "description": "adds quality of life features and extra personalisation to SoundCloud",
+  "description": "Adds quality of life features and extra personalisation to SoundCloud.",
   "permissions": [
     "activeTab",
     "scripting",

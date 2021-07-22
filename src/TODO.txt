@@ -1,10 +1,9 @@
-get proper hosting
-sql
 *oauth_token chaching
 *follows you server side
-*collective lists
 
-optionals
-    sterilise badge icons
-    oauth_token encryption
-    message refreshing
+sterilise badge icons
+oauth_token encryption
+message refreshing
+message scroll up
+roster removing
+double requesting fix

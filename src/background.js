@@ -2,12 +2,6 @@ var injected = false;
 var pre_url = "";
 
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set({
-    self_followers: ["bpiv", "dltzk"]
-  });
-});
-
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   console.log(changeInfo);
   console.log(tabId);

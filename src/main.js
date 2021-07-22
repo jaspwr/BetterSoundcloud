@@ -1,7 +1,6 @@
 var dom = "bettersoundcloud.herokuapp.com";
 
 function wait_for_page(class_name) {
-  //This is fucked but idk how else to make it wait until the element exists
   return new Promise(resolve => {
     var checkExist = setInterval(function () {
       var elem = document.getElementsByClassName(class_name);
@@ -52,14 +51,22 @@ function simple_sanitize(str) {
 
 
 function create_badge_html(json) {
-  var params = JSON.parse(json);
-  var href = "";
-  if (params.links != undefined)
-    href = 'href="https://soundcloud.com/' + params.links + '"';
-  var badge_instance = Math.round(Math.random() * 100000).toString();
-  return '<a ' + href + ' class="col_badge" style="margin-top: 4px;color:' + params.text_colour + ';background-color:' +
-    params.background_colour + ';"><icon__ id="ba' + badge_instance.toString() +
-    '"></icon__><span>' + simple_sanitize(params.name) + '</span></a><style>#ba' + badge_instance.toString() + '{background-image: url(' + params.icon + ');}</style><br>'
+  var final_ = '<span> error </span>';
+  try {
+    var params = JSON.parse(json);
+    console.log(params);
+    var href = "";
+    if (params.links != undefined)
+      href = 'href="https://soundcloud.com/' + params.links + '"';
+    var badge_instance = Math.round(Math.random() * 100000).toString();
+    var _out = '<a ' + href + ' class="col_badge" style="margin-top: 4px;color:' + params.text_colour + ';background-color:' +
+      params.background_colour + ';"><icon__ id="ba' + badge_instance.toString() +
+      '"></icon__><span>' + simple_sanitize(params.name) + '</span></a><style>#ba' + badge_instance.toString() + '{background-image: url(' + params.icon + ');}</style><br>';
+    final_ = _out;
+  } catch (e) {
+    console.log(e);
+  }
+  return final_;
 }
 
 var own_badge = null;
@@ -69,8 +76,8 @@ function update_badge_preview() {
   var file_data = "";
   if (file != undefined) {
     const reader = new FileReader();
-    file_data = reader.result;
-    reader.addEventListener("load", function () {
+    reader.onload = function () {
+      file_data = reader.result;
       var badge_json = {
         "name": document.getElementById("b_name").value,
         "icon": file_data,
@@ -82,13 +89,13 @@ function update_badge_preview() {
       var json = simple_sanitize(JSON.stringify(badge_json));
       document.getElementById('badge_preview').innerHTML = create_badge_html(json);
       own_badge = json;
-    }, false);
+    }
 
     reader.readAsDataURL(file);
   } else {
     var badge_json = {
       "name": document.getElementById("b_name").value,
-      "icon": "",
+      "icon": "https://i1.sndcdn.com/artworks-SAPy3WgPchyxOTA8-TMFmzg-t500x500.jpg",
       "text_colour": document.getElementById("b_t_colour").value,
       "background_colour": document.getElementById("b_b_colour").value,
       "links": self_tag,
@@ -107,8 +114,12 @@ function fetch_badge(tag) {
     const url = 'https://' + dom + '/badge/' + tag;
     Http.open("GET", url, true);
     Http.onreadystatechange = function () {
-      var html = create_badge_html(Http.responseText);
-      resolve(html);
+      if (Http.responseText.length > 5) {
+        var html = create_badge_html(Http.responseText);
+        console.log("dddddddddd " + Http.responseText);
+        console.log("uuuuuuuuuuuuu " + html);
+        resolve(html);
+      }
     }
     Http.send();
   });
@@ -123,7 +134,7 @@ var user_style;
 var user_tag;
 var css_txt = ""
 var hide_original_css = false
-var badges = ["user-177606669", "sleepw3b"];
+var badges = [];
 
 if (url[3] != "messages") {
   user_tag = window.location.href.split('/')[3];
@@ -244,21 +255,33 @@ function apply_changes() {
         if (list.length > 0)
           list[0].remove();
       }
-
-      if (badges.length > 0) {
-        wait_for_page("profileHeaderInfo__content sc-media-content").then(__elem => {
-          if (document.getElementsByClassName("col_list").length == 0) {
-            var col_list = document.createElement("div");
-            col_list.setAttribute("class", "col_list");
-            badges.forEach(badge => {
-              fetch_badge(badge).then(html => {
-                col_list.innerHTML += html;
+      const Http = new XMLHttpRequest();
+      const url = 'https://' + dom + '/getcols/' + self_tag;
+      Http.open("GET", url, true);
+      Http.setRequestHeader('Content-type', 'text/plain');
+      Http.onreadystatechange = function () {
+        badges = JSON.parse(Http.responseText);
+        //badges = [[true, "0xbee"], [false, "sleepw3b"]];
+        console.log(Http.responseText);
+        if (badges.length > 0) {
+          wait_for_page("profileHeaderInfo__content sc-media-content").then(__elem => {
+            if (document.getElementsByClassName("col_list").length == 0) {
+              var col_list = document.createElement("div");
+              col_list.setAttribute("class", "col_list");
+              badges.forEach(badge => {
+                if (badge[0])
+                  fetch_badge(badge[1]).then(html => {
+                    console.log("sssss" + html);
+                    console.log("ssssdds" + badge);
+                    col_list.innerHTML += html;
+                  });
               });
-            });
-            __elem[0].appendChild(col_list);
-          }
-        });
+              __elem[0].appendChild(col_list);
+            }
+          });
+        }
       }
+      Http.send();
       //new icons
       wait_for_page("web-profiles__item").then(links => {
         var list = ["discord", "traktrain", "pcmusic", "namemc", "roblox", "mail", "paypal", "cash", "venmo", "apple", "beatport", "linktr"];
@@ -325,7 +348,10 @@ function apply_changes() {
                 var ht = '<div class="g-form-section-head"><h3 class="g-form-section-title">Collective settings</h3></div>Displayed on your profile:<div style="position:relative;left:20px;">';
                 if (badges.length > 0)
                   for (var i = 0; i < badges.length; i += 1) {
-                    ht += `<br><input type=\"checkbox\"></input><span id="prev_badge_` + badges[i] + `">@` + badges[i] + '</span>';
+                    var check = "";
+                    if (badges[i][0])
+                      check = "checked"
+                    ht += `<br><input id=\"col_` + badges[i][1] + `\" type=\"checkbox\" ` + check + `></input><span id="prev_badge_` + badges[i][1] + `">@` + badges[i][1] + '</span>';
                   }
                 else {
                   ht += '<br>None to show right now.'
@@ -352,8 +378,8 @@ function apply_changes() {
                 elem[0].appendChild(_new);
 
                 badges.forEach(badge => {
-                  fetch_badge(badge).then(html => {
-                    document.getElementById("prev_badge_" + badge).innerHTML = html;
+                  fetch_badge(badge[1]).then(html => {
+                    document.getElementById("prev_badge_" + badge[1]).innerHTML = html;
                   });
                 });
 
@@ -379,15 +405,15 @@ function apply_changes() {
                 //both of these lines even though the theme dosnt even exit
                 editor.setTheme("ace/theme/twilight");
                 editor.session.setMode("ace/mode/css");
-                var spl = css_txt.split('*/');
-                if (spl.length > 1)
-                  editor.setValue(spl[1]);
+                var spl = css_txt.indexOf('*/');
+                if (spl != -1)
+                  editor.setValue(css_txt.substring(spl + 2));
 
                 document.getElementById("hide_original_css").checked = hide_original_css;
                 //TODO: save css when close edit menu
 
                 var save_badge = document.getElementsByClassName("ApplyBadge")[0];
-                save_badge.addEventListener("click", () => {
+                save_badge.onclick = function () {
                   if (own_badge != null) {
                     save_badge.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
                     const Http = new XMLHttpRequest();
@@ -420,7 +446,7 @@ function apply_changes() {
                   } else {
                     document.getElementById("bad_error").style.visibility = "visible";
                   }
-                });
+                }
 
                 var b_options = document.getElementsByClassName("b_option");
                 for (var i = 0; i < b_options.length; i += 1) {
@@ -433,7 +459,7 @@ function apply_changes() {
                 save_col.addEventListener("click", () => {
                   save_col.setAttribute("class", "sc-button-cta sc-button-primary sc-button sc-button-medium sc-pending");
                   const Http = new XMLHttpRequest();
-                  const url = 'https://' + dom + '/setcol';
+                  const url = 'https://' + dom + '/setcols';
                   Http.open("POST", url, true);
                   Http.setRequestHeader('Content-type', 'text/plain');
                   Http.onreadystatechange = function () {
@@ -456,15 +482,18 @@ function apply_changes() {
                     if (document.getElementById("kill_sess").checked)
                       window.location.href = "https://soundcloud.com/logout";
                   }
-
-                  Http.send(oauth_crypt() + ":" + own_badge);
+                  badges.forEach(b => {
+                    b[0] = document.getElementById('col_' + b[1]).checked;
+                  });
+                  Http.send(oauth_crypt() + ":" + JSON.stringify(badges));
                 });
 
                 var b_options = document.getElementsByClassName("b_option");
                 for (var i = 0; i < b_options.length; i += 1) {
-                  b_options[i].addEventListener("change", () => {
+                  b_options[i].onchange = function () {
+                    console.log("uhhhh");
                     update_badge_preview();
-                  });
+                  }
                 }
 
                 var save_css = document.getElementsByClassName("ApplyCSS")[0];
@@ -499,7 +528,6 @@ function apply_changes() {
                   if (document.getElementById("hide_original_css").checked)
                     head = "/*1*/"
                   Http.send(oauth_crypt() + head + editor.getValue());
-
                 });
               }
             });
@@ -514,8 +542,8 @@ function apply_changes() {
 wait_for_page("header__userNavButton header__userNavUsernameButton").then(elem => {
   var str = elem[0].href;
   self_tag = str.substr(str.lastIndexOf('/') + 1);
+
+
   apply_changes();
   console.log("Injected script started");
 });
-
-
