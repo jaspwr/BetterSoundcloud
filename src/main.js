@@ -116,8 +116,6 @@ function fetch_badge(tag) {
     Http.onreadystatechange = function () {
       if (Http.responseText.length > 5) {
         var html = create_badge_html(Http.responseText);
-        console.log("dddddddddd " + Http.responseText);
-        console.log("uuuuuuuuuuuuu " + html);
         resolve(html);
       }
     }
@@ -247,7 +245,6 @@ function apply_changes() {
       _Http.setRequestHeader('Content-type', 'text/plain');
       _Http.onreadystatechange = function () {
         var self_followers = JSON.parse(_Http.responseText);
-        console.log(self_followers);
         //follows you
         if (self_followers.includes(user_tag)) {
           wait_for_page("profileHeaderInfo__userName g-type-shrinkwrap-block g-type-shrinkwrap-large-primary")
@@ -268,10 +265,9 @@ function apply_changes() {
       Http.open("GET", url, true);
       Http.setRequestHeader('Content-type', 'text/plain');
       Http.onreadystatechange = function () {
-        //badges = JSON.parse(Http.responseText);
-        badges = [[true, "user-177606669"], [true, "sleepw3b"]];
+        badges = JSON.parse(Http.responseText);
+        //badges = [[true, "user-177606669"], [true, "sleepw3b"]];
         console.log(badges);
-        console.log(Http.responseText);
         if (badges.length > 0) {
           wait_for_page("profileHeaderInfo__content sc-media-content").then(__elem => {
             var col_list = document.createElement("div");
@@ -501,7 +497,6 @@ function apply_changes() {
                 var b_options = document.getElementsByClassName("b_option");
                 for (var i = 0; i < b_options.length; i += 1) {
                   b_options[i].onchange = function () {
-                    console.log("uhhhh");
                     update_badge_preview();
                   }
                 }
