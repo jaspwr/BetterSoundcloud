@@ -6,7 +6,6 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage",
     "tabs"
   ],
   "host_permissions": [
@@ -14,16 +13,16 @@
     "https://bettersoundcloud.herokuapp.com/*"
   ],
   "icons": {
-    "16": "./img/icon.png"
+    "16": "./img/icon16.png",
+    "48": "./img/icon48.png",
+    "128": "./img/icon128.png"
   },
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "./html/menu.html",
-    "default_icon": "./img/icon.png"
+    "default_icon": "./img/icon16.png"
   },
-  "options_page": "./html/options.html",
   "web_accessible_resources": [
     {
       "resources": [

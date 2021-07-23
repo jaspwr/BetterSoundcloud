@@ -127,7 +127,6 @@ function fetch_badge(tag) {
 
 
 ///////////////////   Init Processes   ///////////////////
-var self_followers = ["thebig-v", "1juni2", "jsonmafia", "yakobbb", "zekzo099", "exyuze", "sebyyblu", "user-367224202", "fransclaws", "cxnsul", "simpleelpmis", "carisweat", "undertalefan1994", "naisu9k", "carson-james-535484435", "reksi420", "glacierrbaby", "antixs0cial", "user-424076644", "okkjune", "aleks0000", "user-791110718", "user-567304494", "realsexandfuck", "verylittlebeef", "user-788567091", "sanit-hills", "demotegi", "vampire-orgy", "bloodspit", "keo4d", "user-956429529-568818368", "toastywav", "death2azuru", "user-846055610", "thanksbud", "user-959136553", "antoniaaa-505821866", "bpiv", "user-5019749294", "madjestickasual", "marmint2000", "crckrbrrll", "shadeeqap", "clarkcameronbootland55", "spotifyemployeereal", "v3n0m-xd", "littleduders", "pb6k", "nohanaa", "vaughnvandal", "pppibe", "beefybites", "swotll", "breakchildaltuwu", "toomanyuglythoughts", "xofilo", "otaky", "zumtru", "girlfrompluto", "cupidfilmz", "assonanceyeet", "myhr2v", "vocaloidd", "1dx7", "user-671324570", "ekoisunstable", "seviien", "user-177606669", "a-a-p-o-o", "ffawn", "ailat16", "romeorose777", "iinno11", "user-267961558", "jack-craig-922523230", "sp00ked-mentions", "hiddencontact", "mossgardenn", "nosebleed2288192882", "sleepw3b", "user-949487544", "willbrown-music", "user-233008036", "user-660960760", "dassuo", "teethless", "gumcod", "frickidydick", "user-923110661", "gigalol", "user-342560494", "user-799140391", "swotes", "ischemia1", "neww0rld", "user-606008484", "prodyungvro", "leo-dioer", "lacroixproduction", "user-870901434", "ejectmeintospace", "codyschneiderx", "leinebeats", "juliragsdale78", "d-ope-647506174", "underindictmentofficial"];
 var self_tag;
 var url = window.location.href.split('/');;
 var user_style;
@@ -242,42 +241,53 @@ function apply_changes() {
 
       break;
     default:
-      //follows you
-      if (self_followers.includes(user_tag)) {
-        wait_for_page("profileHeaderInfo__userName g-type-shrinkwrap-block g-type-shrinkwrap-large-primary")
-          .then((name) => {
-            if (document.getElementsByClassName("fy").length == 0)
-              name[0].innerHTML +=
-                "<div class=\"fy\" style=\"display: inline; background-color: #666666; font-size: 16px; padding: 3px; border-radius: 4px; color: #a6a6a6\">Follows you</div>";
-          });
-      } else {
-        var list = document.getElementsByClassName("fy");
-        if (list.length > 0)
-          list[0].remove();
+      const _Http = new XMLHttpRequest();
+      const _url = 'https://' + dom + '/getfollows/' + self_tag;
+      _Http.open("GET", _url, true);
+      _Http.setRequestHeader('Content-type', 'text/plain');
+      _Http.onreadystatechange = function () {
+        var self_followers = JSON.parse(_Http.responseText);
+        console.log(self_followers);
+        //follows you
+        if (self_followers.includes(user_tag)) {
+          wait_for_page("profileHeaderInfo__userName g-type-shrinkwrap-block g-type-shrinkwrap-large-primary")
+            .then((name) => {
+              if (document.getElementsByClassName("fy").length == 0)
+                name[0].innerHTML +=
+                  "<div class=\"fy\" style=\"display: inline; background-color: #666666; font-size: 16px; padding: 3px; border-radius: 4px; color: #a6a6a6\">Follows you</div>";
+            });
+        } else {
+          var list = document.getElementsByClassName("fy");
+          if (list.length > 0)
+            list[0].remove();
+        }
       }
+      _Http.send();
       const Http = new XMLHttpRequest();
-      const url = 'https://' + dom + '/getcols/' + self_tag;
+      const url = 'https://' + dom + '/getcols/' + user_tag;
       Http.open("GET", url, true);
       Http.setRequestHeader('Content-type', 'text/plain');
       Http.onreadystatechange = function () {
-        badges = JSON.parse(Http.responseText);
-        //badges = [[true, "0xbee"], [false, "sleepw3b"]];
+        //badges = JSON.parse(Http.responseText);
+        badges = [[true, "user-177606669"], [true, "sleepw3b"]];
+        console.log(badges);
         console.log(Http.responseText);
         if (badges.length > 0) {
           wait_for_page("profileHeaderInfo__content sc-media-content").then(__elem => {
-            if (document.getElementsByClassName("col_list").length == 0) {
-              var col_list = document.createElement("div");
-              col_list.setAttribute("class", "col_list");
-              badges.forEach(badge => {
-                if (badge[0])
-                  fetch_badge(badge[1]).then(html => {
-                    console.log("sssss" + html);
-                    console.log("ssssdds" + badge);
-                    col_list.innerHTML += html;
-                  });
-              });
-              __elem[0].appendChild(col_list);
+            var col_list = document.createElement("div");
+            col_list.setAttribute("class", "col_list");
+            badges.forEach(badge => {
+              if (badge[0])
+                fetch_badge(badge[1]).then(html => {
+                  col_list.innerHTML += html;
+                });
+            });
+            var lis = document.getElementsByClassName("col_list");
+            if (lis.length > 0) {
+              lis[0].remove();
             }
+            __elem[0].appendChild(col_list);
+
           });
         }
       }

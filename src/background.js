@@ -1,7 +1,3 @@
-var injected = false;
-var pre_url = "";
-
-
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   console.log(changeInfo);
   console.log(tabId);
@@ -27,31 +23,5 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       });
     });
   }
-
-
-
-  //else {
-  //   if (changeInfo.status === "loading") {
-  //     if (!injected) {
-  //       injected = true;
-
-  //     }
-  //   } else if (changeInfo.status === "complete") {
-  //     if (pre_url != tab.url)
-  //       injected = false;
-  //     pre_url = tab.url;
-  //   }
-  //}
-
 });
 
-// function apply_changes() {
-//   document.body.style.backgroundColor = 'red';
-// }
-
-// chrome.action.onClicked.addListener((tab) => {
-//   chrome.scripting.executeScript({
-//     target: { tabId: tab.id },
-//     function: apply_changes
-//   });
-// });

@@ -1,5 +1,4 @@
 function wait_for_page(class_name) {
-    //This is fucked but idk how else to make it wait until the element exists
     return new Promise(resolve => {
         var checkExist = setInterval(function () {
             var elem = document.getElementsByClassName(class_name);

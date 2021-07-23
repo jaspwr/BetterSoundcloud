@@ -1,6 +1,4 @@
-*oauth_token chaching
-*follows you server side
-
+oauth_token chaching
 sterilise badge icons
 oauth_token encryption
 message refreshing
