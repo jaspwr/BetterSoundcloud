@@ -1,7 +1,0 @@
-oauth_token chaching
-sterilise badge icons
-oauth_token encryption
-message refreshing
-message scroll up
-roster removing
-double requesting fix
